@@ -62,6 +62,7 @@ echo date('Y年m月d日')."星期$dayStr";
 $week = array('星期日','星期一','星期二','星期三','星期四','星期五','星期六');
 echo date('Y年m月d日 H:i:s ').$week[date('w')];
 ```
+
 ### 判断是否为闰年Leap Year
 
 - 方法一：查看2月份有多少天，大于28则为闰年
