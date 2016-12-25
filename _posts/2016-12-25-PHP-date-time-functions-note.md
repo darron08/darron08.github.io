@@ -37,7 +37,7 @@ echo date('Y-m-d H:i:s', strtotime('last month'));
 ## date()函数的应用
 ### date()函数是不能显示中文的，那么怎么用中文显示星期几呢？
 例一:
-```PHP
+```php
 $day = date('w');
 
 switch($day){
@@ -62,7 +62,7 @@ echo date('Y年m月d日 H:i:s ').$week[date('w')];
 1. 查看2月份有多少天，大于28则为闰年
 2. 闰年算法
 四年一闰，百年不闰，四百年再闰
-```PHP
+```php
 $year = date('Y');
 
 if ( $year%4==0 &&  $year%100!=0 || $year%400==0  ){
