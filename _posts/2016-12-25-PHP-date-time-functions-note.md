@@ -35,6 +35,7 @@ echo date('Y-m-d H:i:s', strtotime('last month'));
 ```
 
 ## date()函数的应用
+
 ### date()函数是不能显示中文的，那么怎么用中文显示星期几呢？
 
 例一:
