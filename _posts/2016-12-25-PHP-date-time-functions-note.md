@@ -1,6 +1,7 @@
 ---
 layout: post
 title:  "PHP日期时间函数的学习记录"
+date:   2016-12-25
 categories: PHP
 tags:  PHP
 author: Tse 
@@ -32,3 +33,43 @@ echo date('Y-m-d H:i:s', strtotime('yesterday', strtotime('first day of this mon
 echo date('Y-m-d H:i:s', strtotime('previous month')).'<br/>';
 echo date('Y-m-d H:i:s', strtotime('last month'));
 ```
+
+## date()函数的应用
+### date()函数是不能显示中文的，那么怎么用中文显示星期几呢？
+例一:
+```PHP
+$day = date('w');
+
+switch($day){
+	case 0: $dayStr = '日';break;
+	case 1: $dayStr = '一';break;
+	case 2: $dayStr = '二';break;
+	case 3: $dayStr = '三';break;
+	case 4: $dayStr = '四';break;
+	case 5: $dayStr = '五';break;
+	case 6: $dayStr = '六';break;
+}
+
+echo date('Y年m月d日')."星期$dayStr";
+```
+例二:
+```PHP
+$week = array('星期日','星期一','星期二','星期三','星期四','星期五','星期六');
+echo date('Y年m月d日 H:i:s ').$week[date('w')];
+```
+
+### 判断是否为闰年Leap Year
+1. 查看2月份有多少天，大于28则为闰年
+2. 闰年算法
+四年一闰，百年不闰，四百年再闰
+```PHP
+$year = date('Y');
+
+if ( $year%4==0 &&  $year%100!=0 || $year%400==0  ){
+	echo $year.'是闰年';
+}else{
+	echo $year.'不是闰年';
+}
+```
+3. 使用date()的参数'L'
+date('L'): 是否为闰年，如果是闰年返回1，否则返回0.
