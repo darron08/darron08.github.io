@@ -52,4 +52,4 @@ author: Tse
 * $pattern[5] 到 $pattern[7] 是为了清除SQL注释（无论这个SQL文件来自哪个平台）。
 
 
-有关BOM的介绍可以看看该链接：https://www.zhihu.com/question/20167122
+有关BOM的介绍可以看看该链接：[https://www.zhihu.com/question/20167122](https://www.zhihu.com/question/20167122)
