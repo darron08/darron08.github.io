@@ -12,10 +12,10 @@ author: Tse
 
 ## ECMAScript类型
 
-先了解一下ECMAScript的变量类型及相关的基础知识。
-ECMAScript中有5种基本数据类型：Undefined, Null, Boolen, Number, String。还有一种复杂数据类型： Object。
+先了解一下ECMAScript的变量类型。ECMAScript中有5种基本数据类型：Undefined, Null, Boolen, Number, String。还有一种复杂数据类型： Object。
 
 ## typeof操作符
+
 对一个值使用typeof操作符可能会返回下列某个字符串：  
 
 - "undefined" --- 如果这个值未定义（也就是undefined)或者是一个未声明过的变量；
@@ -36,22 +36,25 @@ ECMAScript中有5种基本数据类型：Undefined, Null, Boolen, Number, String
 ```
 
 ## if (val) 和 Boolean()
+
 在很多语言中，都可以用 if (变量) 来判断一个变量是否存在或是否为空。那么在ECMAScript中是否可以这样呢？要知道答案，必须要知道各类型转换为Boolean类型的规则，因为if (变量) 语句会隐式执行Boolean()。  
-String:  
-任何非空字符串 -> true;   
-空字符串 -> false;  
+### String  
+- 任何非空字符串 -> true;   
+- 空字符串 -> false;  
 
-Number:  
-任何非零数字值（包括无穷大）-> true  
-0和NaN -> false
+### Number  
+- 任何非零数字值（包括无穷大）-> true  
+- 0和NaN -> false
 
-Object  
-任何对象 -> true  
-null -> false  
+### Object  
+- 任何对象 -> true  
+- null -> false  
 
-Undefined -> false
+### Undefined
+- 只有false
 
 ## 判断变量是否为空
+
 ### String
 针对表单验证，因为是String类型，所以判断内容是否为空很简单，例如：
 ```js  
