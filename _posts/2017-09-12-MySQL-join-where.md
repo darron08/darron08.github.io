@@ -16,7 +16,6 @@ author: Tse
 
 这里涉及到两个表，一个是用户表，一个是订单表。表结构大概如下：
 
-```MySQL
 
 	Table: user
 Create Table: CREATE TABLE `user` (
@@ -36,17 +35,31 @@ Create table: CREATE TABLE `deal` (
 	PRIMARY KEY (`dealid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='订单表'
 
-```
+
 一开始我很快就写了一条SQL：
 
 
 select uid, count(1), sum(fee) from 
-(select a.uid, d.dealid, d.fee, from `user` as a left join deal as d on a.uid = d.uid
+(select a.uid, d.dealid, d.fee, from user as a left join deal as d on a.uid = d.uid
 WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') and
 d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')) as t
 group by uid;
 
 
 
-但其实这样写是有问题的，因为这样会把没有下单的用户的记录去除掉。
+但其实这样写是有问题的，因为这样会把没有下单的用户的记录去除掉。问题在于优先级，on的优先级高于where。
+
+首先明确两个概念：
+
+1. LEFT JOIN 关键字会从左表那里返回所有的行，即使右表没有匹配的行。
+2. 数据库在通过连接两张或多张表来返回记录时，都会生成一张中间的临时表，然后再将这张临时表返回给用户。
+
+在left join下，两者的区别：
+
+1. on是在生成临时表的时候使用的条件，不管on的条件是否起到作用，都会返回左表的行。
+2. where则是在生成临时表之后使用的条件，此时已经不管是否使用了left join了，只要条件不为真的行，全部过滤掉。
+
+所以，其实子语句 select a.uid, d.dealid, d.fee, from user as a left join deal as d on a.uid = d.uid WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') and
+d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00') 是会先根据 from user as a left join deal as d on a.uid = d.uid 生成一个临时表，这个临时表肯定会包含user表的所有行。然后，根据where的条件 a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') 把注册时间不符的用户记录删除掉，而且因为没有下过单的用户关于deal表的记录会是NULL，所以在where条件 d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00') 的作用下，会把不符合条件的记录（当然就包括NULL）删除掉，于是我们看到最后的结果是只能得到8月份新注册且有下单的用户，截至到9月1日前累计订单量，累计支付金额，这并不是我们想要的结果。
+
 
