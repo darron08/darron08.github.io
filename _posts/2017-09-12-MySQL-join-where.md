@@ -12,7 +12,7 @@ author: Tse
 
 ## 前言
 
-最近接到一个需求：导出8月份新注册的用户，截至到9月1日前累计订单量，累计支付金额。
+最近接到一个需求：导出8月份新注册的用户（无论是否有下单），截至到9月1日前累计订单量，累计支付金额。
 
 这里涉及到两个表，一个是用户表，一个是订单表。表结构大概如下：
 
@@ -38,13 +38,15 @@ Create table: CREATE TABLE `deal` (
 
 ```
 一开始我很快就写了一条SQL：
-```MySQL
+
 
 select uid, count(1), sum(fee) from 
 (select a.uid, d.dealid, d.fee, from `user` as a left join deal as d on a.uid = d.uid
-WHERE a.regtime>= unix_timestamp('2017-04-01 00:00:00') and a.regtime< unix_timestamp('2017-05-01 00:00:00') and
-d.state= 4 and d.gentime<unix_timestamp('2017-07-01 00:00:00')) as t
+WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') and
+d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')) as t
 group by uid;
 
-```
+
+
+但其实这样写是有问题的，因为这样会把没有下单的用户的记录去除掉。
 
