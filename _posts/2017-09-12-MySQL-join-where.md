@@ -46,6 +46,12 @@ d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')) as t
 group by uid;
 
 
+SELECT uid, COUNT(dealid), SUM(fee) FROM 
+(SELECT a.uid, d.dealid, d.fee, FROM user AS a LEFT JOIN deal AS d ON a.uid = d.uid
+WHERE a.regtime>= UNIX_TIMESTAMP('2017-08-01 00:00:00') AND a.regtime< UNIX_TIMESTAMP('2017-09-01 00:00:00') AND
+d.state= 4 AND d.gentime<UNIX_TIMESTAMP('2017-09-01 00:00:00')) AS t
+GROUP BY uid;
+
 
 但其实这样写是有问题的，因为这样会把没有下单的用户的记录去除掉。问题在于优先级，on的优先级高于where。
 
