@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "MySQL left join on where"
+title:  "MySQL left join后on与where的区别"
 date:   2017-09-12
 categories: MySQL
 tags:  MySQL
@@ -10,7 +10,6 @@ author: Tse
 * content
 {:toc}
 
-## 前言
 
 最近接到一个需求：导出8月份新注册的用户（无论是否有下单），截至到9月1日前累计订单量，累计支付金额。
 
@@ -64,33 +63,32 @@ d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00') 是会先根据 f
 正确的SQL语句应该是：
 
 ```
-select uid, count(dealid), sum(fee) from (select a.uid, d.dealid, d.fee from user as a left join deal as d on a.uid = d.uid
-and d.state= 4
-   and d.gentime<unix_timestamp('2017-09-01 00:00:00') WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00')
-   and a.regtime< unix_timestamp('2017-09-01 00:00:00')) as t
-group by uid;
+select uid, count(dealid), sum(fee) from 
+(
+	select a.uid, d.dealid, d.fee from user as a left join deal as d on 
+	a.uid = d.uid and d.state= 4
+	and d.gentime<unix_timestamp('2017-09-01 00:00:00') 
+	WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00')
+	and a.regtime< unix_timestamp('2017-09-01 00:00:00')
+) as t group by uid;
 ```
 上面这条语句，我在JOIN后面加多了两个针对关联表deal的条件，d.state=4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')。
 
 ON与where的使用一定要注意场所：
 
-1. **ON后面的筛选条件主要是针对的是关联表【而对于主表刷选条件不适用】。**
-2. 对于主表的筛选条件应放在where后面，不应该放在ON后面。
+1. **ON后面的筛选条件主要是针对的是关联表。**
+2. 对于主表的筛选条件应放在where后面。
 3. 对于关联表我们要区分对待。如果是要条件查询后才连接应该把查询件放置于ON后。如果是想在连接完毕后才筛选就应把条件放置于where后面。
 4. 对于关联表我们其实可以先做子查询再做join，SQL如下：
 
 ```
-select aa.uid as 用户id,
-       count(dd.dealid) as 成交单量,
-       sum(dd.fee) as 成交金额 
-  from(
-SELECT uid,
-  from user
- WHERE regtime> unix_timestamp('2017-04-1')
-   and regtime < unix_timestamp('2017-05-1')) as aa
-  left join(
-select uid, dealid, fee from t_cps_deal
- where state= 4
-   and gentime< unix_timestamp('2017-07-01')) as dd on aa.uid= dd.uid
- group by 用户id;
+select aa.uid ,count(dd.dealid), sum(dd.fee) from
+(
+	SELECT uid from user
+	WHERE regtime> unix_timestamp('2017-04-1')
+	and regtime < unix_timestamp('2017-05-1')
+) as aa left join (
+	select uid, dealid, fee from deal
+	where state= 4 and gentime< unix_timestamp('2017-07-01')
+) as dd on aa.uid= dd.uid group by aa.uid;
 ```
