@@ -37,14 +37,7 @@ Create table: CREATE TABLE `deal` (
 
 
 一开始我很快就写了一条SQL：
-```
 
-select uid, count(dealid), sum(fee) from 
-(select a.uid, d.dealid, d.fee, from user as a left join deal as d on a.uid = d.uid
-WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') and
-d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')) as t
-group by uid;
-```
 ```
 SELECT uid, COUNT(dealid), SUM(fee) FROM 
 (SELECT a.uid, d.dealid, d.fee, FROM user AS a LEFT JOIN deal AS d ON a.uid = d.uid
@@ -68,24 +61,25 @@ GROUP BY uid;
 所以，其实子语句 select a.uid, d.dealid, d.fee, from user as a left join deal as d on a.uid = d.uid WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') and
 d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00') 是会先根据 from user as a left join deal as d on a.uid = d.uid 生成一个临时表，这个临时表肯定会包含user表的所有行。然后，根据where的条件 a.regtime>= unix_timestamp('2017-08-01 00:00:00') and a.regtime< unix_timestamp('2017-09-01 00:00:00') 把注册时间不符的用户记录删除掉，而且因为没有下过单的用户关于deal表的记录会是NULL，所以在where条件 d.state= 4 and d.gentime<unix_timestamp('2017-09-01 00:00:00') 的作用下，会把不符合条件的记录（当然就包括NULL）删除掉，于是我们看到最后的结果是只能得到8月份新注册且有下单的用户，截至到9月1日前累计订单量，累计支付金额，这并不是我们想要的结果。
 
-改良
+正确的SQL语句应该是：
+
+```
 select uid, count(dealid), sum(fee) from (select a.uid, d.dealid, d.fee from user as a left join deal as d on a.uid = d.uid
 and d.state= 4
-   and d.gentime<unix_timestamp('2017-07-01 00:00:00') WHERE a.regtime>= unix_timestamp('2017-04-01 00:00:00')
-   and a.regtime< unix_timestamp('2017-05-01 00:00:00')) as t
+   and d.gentime<unix_timestamp('2017-09-01 00:00:00') WHERE a.regtime>= unix_timestamp('2017-08-01 00:00:00')
+   and a.regtime< unix_timestamp('2017-09-01 00:00:00')) as t
 group by uid;
+```
+上面这条语句，我在JOIN后面加多了两个针对关联表deal的条件，d.state=4 and d.gentime<unix_timestamp('2017-09-01 00:00:00')。
 
 ON与where的使用一定要注意场所：
 
-
-
-1. ON后面的筛选条件主要是针对的是关联表【而对于主表刷选条件不适用】。
+1. **ON后面的筛选条件主要是针对的是关联表【而对于主表刷选条件不适用】。**
 2. 对于主表的筛选条件应放在where后面，不应该放在ON后面。
 3. 对于关联表我们要区分对待。如果是要条件查询后才连接应该把查询件放置于ON后。如果是想在连接完毕后才筛选就应把条件放置于where后面。
-4. 对于关联表我们其实可以先做子查询再做join
+4. 对于关联表我们其实可以先做子查询再做join，SQL如下：
 
-
-同事的方法
+```
 select aa.uid as 用户id,
        count(dd.dealid) as 成交单量,
        sum(dd.fee) as 成交金额 
@@ -99,3 +93,4 @@ select uid, dealid, fee from t_cps_deal
  where state= 4
    and gentime< unix_timestamp('2017-07-01')) as dd on aa.uid= dd.uid
  group by 用户id;
+```
