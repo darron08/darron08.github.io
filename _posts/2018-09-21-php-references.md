@@ -140,6 +140,30 @@ echo $myValue;                // prints the new value of $obj->value, i.e. 2.
 
 
 
+感觉PHP手册的这个例子不是太好，用以下这个例子可能会比较好理解：
+
+```php
+function &func(){
+    static $var = 0;
+    $var ++;
+    var_dump($var);
+    return $var;
+}
+
+$a = &func();	//int(1)
+func();	//int(2)
+$a = 200;
+func(); //int(201)
+```
+
+第一次调用func()，是引用返回，$var的值打印出来是1，$var和$a绑定到一起。
+
+第二次调用func()，$var的值加1，于是打印出来是2。
+
+然后$a的值改变为200，从而修改了$var的值，于是第三次调用func()，$var的值打印出来是201。
+
+
+
 # 引用不是什么
 
 如前所述，引用不是指针。这意味着下面的结构不会产生预期的效果(输出100)，而是会输出1：
@@ -230,7 +254,7 @@ unset($a);
 
 
 
-## *global* 引用
+## global引用
 
 当用 **global $var** 声明一个变量时实际上建立了一个到全局变量的引用。也就是说和这样做是相同的：
 
