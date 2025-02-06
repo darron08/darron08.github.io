@@ -4,7 +4,7 @@ title:  "MySQL left join后on与where的区别"
 date:   2017-09-12
 categories: MySQL
 tags:  MySQL
-author: Tse
+author: darron
 ---
 
 * content
